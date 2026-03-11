@@ -3,6 +3,12 @@
 $params = require __DIR__ . '/params.php';
 $db = require __DIR__ . '/db.php';
 $container = require __DIR__ . '/container.php';
+$urlGroups = require __DIR__ . '/urls.php';
+
+$urlRules = [];
+foreach ($urlGroups as $groupRules) {
+    $urlRules = array_merge($urlRules, $groupRules);
+}
 
 return [
     'id' => 'yii2-livestream-api',
@@ -31,11 +37,7 @@ return [
         'urlManager' => [
             'enablePrettyUrl' => true,
             'showScriptName' => false,
-            'rules' => [
-                'POST streamer/start_room' => 'streamer/start-room',
-                'POST streamer/close_room' => 'streamer/close-room',
-                'GET audience/livestreams' => 'audience/livestreams',
-            ],
+            'rules' => $urlRules,
         ],
         'errorHandler' => [
             'errorAction' => null,

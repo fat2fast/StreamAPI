@@ -6,9 +6,12 @@ namespace Tests\Unit\Controllers;
 
 use App\components\AuthContext;
 use App\controllers\AudienceController;
+use Application\Livestream\DTO\GetLivestreamInput;
 use Application\Livestream\DTO\ListLivestreamsInput;
 use Application\Livestream\DTO\ListLivestreamsOutput;
 use Application\Livestream\DTO\LivestreamOutput;
+use Application\Livestream\Exception\LivestreamNotFoundException;
+use Application\Livestream\UseCase\GetLivestreamUseCase;
 use Application\Livestream\UseCase\ListLivestreamsUseCase;
 use PHPUnit\Framework\TestCase;
 use Yii;
@@ -45,6 +48,7 @@ final class AudienceControllerTest extends TestCase
     protected function tearDown(): void
     {
         Yii::$container->clear(ListLivestreamsUseCase::class);
+        Yii::$container->clear(GetLivestreamUseCase::class);
         Yii::$app = null;
 
         parent::tearDown();
@@ -106,5 +110,49 @@ final class AudienceControllerTest extends TestCase
 
         self::assertSame(500, Yii::$app->response->statusCode);
         self::assertSame('INTERNAL_ERROR', $result['error']);
+    }
+
+    public function testLivestreamDetailReturnsSuccessEnvelope(): void
+    {
+        Yii::$container->set(GetLivestreamUseCase::class, static function () {
+            return new class {
+                public function __invoke(GetLivestreamInput $input): LivestreamOutput
+                {
+                    return new LivestreamOutput(
+                        id: $input->livestreamId,
+                        streamerId: 3,
+                        title: 'Architecture deep dive',
+                        status: 'active',
+                        startedAt: '2026-03-11T10:00:00+00:00',
+                        closedAt: null
+                    );
+                }
+            };
+        });
+
+        $controller = new AudienceController('audience', Yii::$app);
+        $result = $controller->actionLivestream(501);
+
+        self::assertSame('OK', $result['message']);
+        self::assertSame(501, $result['data']['id']);
+        self::assertSame('active', $result['data']['status']);
+    }
+
+    public function testLivestreamDetailReturnsNotFoundEnvelope(): void
+    {
+        Yii::$container->set(GetLivestreamUseCase::class, static function () {
+            return new class {
+                public function __invoke(GetLivestreamInput $input): LivestreamOutput
+                {
+                    throw new LivestreamNotFoundException($input->livestreamId);
+                }
+            };
+        });
+
+        $controller = new AudienceController('audience', Yii::$app);
+        $result = $controller->actionLivestream(999);
+
+        self::assertSame(404, Yii::$app->response->statusCode);
+        self::assertSame('NOT_FOUND', $result['error']);
     }
 }
