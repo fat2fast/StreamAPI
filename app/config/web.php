@@ -8,6 +8,9 @@ return [
     'id' => 'yii2-livestream-api',
     'name' => 'Yii2 Livestream API',
     'basePath' => dirname(__DIR__),
+    'aliases' => [
+        '@App' => '@app',
+    ],
     'controllerNamespace' => 'App\\controllers',
     'bootstrap' => ['log'],
     'components' => [

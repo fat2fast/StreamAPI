@@ -7,6 +7,9 @@ $container = require __DIR__ . '/container.php';
 return [
     'id' => 'yii2-livestream-console',
     'basePath' => dirname(__DIR__),
+    'aliases' => [
+        '@App' => '@app',
+    ],
     'bootstrap' => ['log'],
     'controllerNamespace' => 'App\\commands',
     'components' => [

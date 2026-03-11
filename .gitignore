@@ -1,6 +1,9 @@
 /vendor/
 /runtime/
 /web/assets/
+/app/runtime/
+/app/web/assets/
+/app/vendor/
 /.idea/
 /.vscode/
 /.env
