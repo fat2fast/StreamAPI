@@ -6,9 +6,12 @@ namespace Tests\Unit\Controllers;
 
 use App\components\AuthContext;
 use App\controllers\StreamerController;
+use Application\Livestream\DTO\CloseRoomInput;
 use Application\Livestream\DTO\LivestreamOutput;
 use Application\Livestream\DTO\StartRoomInput;
 use Application\Livestream\Exception\ActiveLivestreamConflictException;
+use Application\Livestream\Exception\ActiveLivestreamNotFoundException;
+use Application\Livestream\UseCase\CloseRoomUseCase;
 use Application\Livestream\UseCase\StartRoomUseCase;
 use DateTimeImmutable;
 use Yii;
@@ -46,6 +49,7 @@ final class StreamerControllerTest extends TestCase
     protected function tearDown(): void
     {
         Yii::$container->clear(StartRoomUseCase::class);
+        Yii::$container->clear(CloseRoomUseCase::class);
         Yii::$app = null;
 
         parent::tearDown();
@@ -106,5 +110,57 @@ final class StreamerControllerTest extends TestCase
 
         self::assertSame(409, Yii::$app->response->statusCode);
         self::assertSame('CONFLICT', $result['error']);
+    }
+
+    public function testCloseRoomReturnsSuccessEnvelope(): void
+    {
+        Yii::$container->set(CloseRoomUseCase::class, static function () {
+            return new class {
+                public function __invoke(CloseRoomInput $input): LivestreamOutput
+                {
+                    return new LivestreamOutput(
+                        id: 101,
+                        streamerId: $input->streamerId,
+                        title: 'Refactoring stream',
+                        status: 'closed',
+                        startedAt: (new DateTimeImmutable('2026-03-10T10:00:00+00:00'))->format(DATE_ATOM),
+                        closedAt: (new DateTimeImmutable('2026-03-10T11:00:00+00:00'))->format(DATE_ATOM)
+                    );
+                }
+            };
+        });
+
+        /** @var AuthContext $authContext */
+        $authContext = Yii::$app->get('authContext');
+        $authContext->set(9, 'streamer');
+
+        $controller = new StreamerController('streamer', Yii::$app);
+        $result = $controller->actionCloseRoom();
+
+        self::assertSame(200, Yii::$app->response->statusCode);
+        self::assertSame('OK', $result['message']);
+        self::assertSame('closed', $result['data']['status']);
+    }
+
+    public function testCloseRoomReturnsNotFoundEnvelope(): void
+    {
+        Yii::$container->set(CloseRoomUseCase::class, static function () {
+            return new class {
+                public function __invoke(CloseRoomInput $input): LivestreamOutput
+                {
+                    throw new ActiveLivestreamNotFoundException();
+                }
+            };
+        });
+
+        /** @var AuthContext $authContext */
+        $authContext = Yii::$app->get('authContext');
+        $authContext->set(9, 'streamer');
+
+        $controller = new StreamerController('streamer', Yii::$app);
+        $result = $controller->actionCloseRoom();
+
+        self::assertSame(404, Yii::$app->response->statusCode);
+        self::assertSame('NOT_FOUND', $result['error']);
     }
 }
