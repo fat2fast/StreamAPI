@@ -34,6 +34,7 @@ return [
             'rules' => [
                 'POST streamer/start_room' => 'streamer/start-room',
                 'POST streamer/close_room' => 'streamer/close-room',
+                'GET audience/livestreams' => 'audience/livestreams',
             ],
         ],
         'errorHandler' => [
