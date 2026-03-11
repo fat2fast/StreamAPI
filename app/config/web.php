@@ -24,6 +24,9 @@ return [
             'format' => 'json',
             'charset' => 'UTF-8',
         ],
+        'authContext' => [
+            'class' => App\components\AuthContext::class,
+        ],
         'db' => $db,
         'urlManager' => [
             'enablePrettyUrl' => true,
