@@ -33,6 +33,7 @@ return [
             'showScriptName' => false,
             'rules' => [
                 'POST streamer/start_room' => 'streamer/start-room',
+                'POST streamer/close_room' => 'streamer/close-room',
             ],
         ],
         'errorHandler' => [
