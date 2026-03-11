@@ -31,7 +31,9 @@ return [
         'urlManager' => [
             'enablePrettyUrl' => true,
             'showScriptName' => false,
-            'rules' => [],
+            'rules' => [
+                'POST streamer/start_room' => 'streamer/start-room',
+            ],
         ],
         'errorHandler' => [
             'errorAction' => null,
