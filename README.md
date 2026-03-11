@@ -19,13 +19,13 @@ cp .env.example .env
 3. Install dependencies inside PHP container:
 
 ```bash
-docker compose exec php composer install
+docker compose exec api composer install
 ```
 
 4. Run migrations manually with Yii2:
 
 ```bash
-docker compose exec php php yii migrate --interactive=0
+docker compose exec api php yii migrate --interactive=0
 ```
 
 Important:
@@ -36,5 +36,5 @@ Important:
 
 ## Service endpoints
 
-- API base URL: `http://localhost:8080`
+- API base URL: `http://localhost:9003`
 - MySQL: `localhost:3306`
