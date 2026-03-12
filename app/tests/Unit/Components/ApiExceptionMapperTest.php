@@ -9,7 +9,10 @@ use Application\Livestream\Exception\ActiveLivestreamConflictException;
 use Application\Livestream\Exception\ActiveLivestreamNotFoundException;
 use Application\Livestream\Exception\InvalidLivestreamInputException;
 use Application\Livestream\Exception\LivestreamNotFoundException;
+use Infrastructure\Auth\InvalidTokenException;
 use PHPUnit\Framework\TestCase;
+use yii\db\IntegrityException;
+use yii\web\NotFoundHttpException;
 
 final class ApiExceptionMapperTest extends TestCase
 {
@@ -57,5 +60,36 @@ final class ApiExceptionMapperTest extends TestCase
         self::assertSame(500, $mapped['status']);
         self::assertSame('INTERNAL_ERROR', $mapped['error']);
         self::assertSame('Unexpected server error', $mapped['message']);
+    }
+
+    public function testMapsUniqueConstraintConflict(): void
+    {
+        $mapper = new ApiExceptionMapper();
+
+        $mapped = $mapper->map(new IntegrityException('Duplicate entry for uq-livestreams-active-streamer-id'));
+
+        self::assertSame(409, $mapped['status']);
+        self::assertSame('CONFLICT', $mapped['error']);
+    }
+
+    public function testMapsInvalidTokenException(): void
+    {
+        $mapper = new ApiExceptionMapper();
+
+        $mapped = $mapper->map(new InvalidTokenException('token bad'));
+
+        self::assertSame(401, $mapped['status']);
+        self::assertSame('UNAUTHORIZED', $mapped['error']);
+    }
+
+    public function testMapsHttpException(): void
+    {
+        $mapper = new ApiExceptionMapper();
+
+        $mapped = $mapper->map(new NotFoundHttpException('Not Found'));
+
+        self::assertSame(404, $mapped['status']);
+        self::assertSame('NOT_FOUND', $mapped['error']);
+        self::assertSame('Not Found', $mapped['message']);
     }
 }

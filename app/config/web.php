@@ -40,6 +40,7 @@ return [
             'rules' => $urlRules,
         ],
         'errorHandler' => [
+            'class' => App\components\ApiErrorHandler::class,
             'errorAction' => null,
         ],
         'log' => [
