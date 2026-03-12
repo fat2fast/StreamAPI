@@ -1,6 +1,6 @@
 <?php
 use App\components\ApiExceptionMapper;
-use Application\Livestream\Repository\LivestreamRepositoryInterface;
+use Domain\Livestream\Repository\LivestreamRepositoryInterface;
 use Infrastructure\Auth\JwtService;
 use Infrastructure\Repository\YiiLivestreamRepository;
 

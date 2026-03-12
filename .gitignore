@@ -4,6 +4,8 @@
 /app/runtime/
 /app/web/assets/
 /app/vendor/
+/app/.phpunit.result.cache
+/app/tests/_output/
 /.idea/
 /.vscode/
 /.env

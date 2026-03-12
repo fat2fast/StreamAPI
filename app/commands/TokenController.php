@@ -39,6 +39,11 @@ class TokenController extends Controller
             return ExitCode::CONFIG;
         }
 
+        if (strlen($secret) < 32) {
+            $this->stderr("jwt.secret must be at least 32 characters for HS256.\n");
+            return ExitCode::CONFIG;
+        }
+
         $token = JWT::encode($payload, $secret, 'HS256');
         $this->stdout($token . PHP_EOL);
 

@@ -41,6 +41,13 @@ Important:
 - Migration is a separate required step and must be executed manually via Yii2 command.
 - `docker-compose.yml` loads runtime variables from `.env`.
 - Initial seeded users are inserted by migration (`streamer@test.local`, `audience@test.local`).
+- `JWT_SECRET` must be at least 32 characters for HS256.
+
+If you changed `.env`, recreate API container to reload env values:
+
+```bash
+docker compose up -d --build api
+```
 
 ## Service endpoints
 
@@ -49,8 +56,20 @@ Important:
 
 ## API documentation files
 
-- OpenAPI spec: `docs/openapi.yaml`
+- OpenAPI source spec: `docs/openapi.yaml`
+- Runtime OpenAPI spec (served by API): `app/docs/openapi.yaml`
 - Postman collection: `docs/postman_collection.json`
+
+## Swagger UI (dev only)
+
+Swagger endpoints are available only when `APP_ENV=dev`:
+
+- `GET /docs` -> Swagger UI
+- `GET /docs/openapi.yaml` -> OpenAPI spec used by Swagger UI
+
+Open in browser:
+
+`http://localhost:9003/docs`
 
 ## Postman usage
 

@@ -1,0 +1,167 @@
+openapi: 3.0.3
+info:
+  title: Yii2 Livestream API
+  version: 1.0.0
+  description: API for streamer and audience applications.
+servers:
+  - url: http://localhost:9003
+tags:
+  - name: Streamer
+  - name: Audience
+paths:
+  /streamer/start_room:
+    post:
+      tags: [Streamer]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title]
+              properties:
+                title:
+                  type: string
+                  minLength: 1
+                  maxLength: 255
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SingleLivestreamResponse'
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  /streamer/close_room:
+    post:
+      tags: [Streamer]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Closed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SingleLivestreamResponse'
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /audience/livestreams:
+    get:
+      tags: [Audience]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListLivestreamResponse'
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /audience/livestreams/{livestream_id}:
+    get:
+      tags: [Audience]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: livestream_id
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SingleLivestreamResponse'
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  responses:
+    BadRequest:
+      description: Invalid request payload
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Unauthorized:
+      description: Missing, invalid, or expired token
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Forbidden:
+      description: Role mismatch
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Conflict:
+      description: Conflict state
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+  schemas:
+    Livestream:
+      type: object
+      properties:
+        id: { type: integer }
+        streamer_id: { type: integer }
+        title: { type: string }
+        status: { type: string, enum: [active, closed] }
+        started_at: { type: string, format: date-time }
+        closed_at: { type: string, format: date-time, nullable: true }
+    SingleLivestreamResponse:
+      type: object
+      required: [data, message]
+      properties:
+        data:
+          $ref: '#/components/schemas/Livestream'
+        message: { type: string, example: OK }
+    ListLivestreamResponse:
+      type: object
+      required: [data, total, message]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Livestream'
+        total: { type: integer }
+        message: { type: string, example: OK }
+    ErrorResponse:
+      type: object
+      required: [error, message]
+      properties:
+        error: { type: string }
+        message: { type: string }

@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'docs' => [
+        'GET docs' => 'docs/index',
+        'GET docs/openapi.yaml' => 'docs/openapi-yaml',
+    ],
     'streamer' => [
         'POST streamer/start_room' => 'streamer/start-room',
         'POST streamer/close_room' => 'streamer/close-room',
