@@ -10,6 +10,7 @@ use yii\db\ActiveRecord;
  * @property int $streamer_id
  * @property string $title
  * @property string $status
+ * @property int|null $active_streamer_id
  * @property string $started_at
  * @property string|null $closed_at
  * @property string $created_at
@@ -30,7 +31,7 @@ class LivestreamRecord extends ActiveRecord
     {
         return [
             [['streamer_id', 'title', 'status', 'started_at'], 'required'],
-            [['streamer_id'], 'integer', 'min' => 1],
+            [['streamer_id', 'active_streamer_id'], 'integer', 'min' => 1],
             [['title'], 'string', 'max' => 255],
             [['status'], 'in', 'range' => [self::STATUS_ACTIVE, self::STATUS_CLOSED]],
             [['started_at', 'closed_at'], 'safe'],

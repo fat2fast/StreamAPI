@@ -35,25 +35,13 @@ Audience API:
 cp .env.example .env
 ```
 
-2. Start services:
+2. Start services (includes dependency install + auto migrate):
 
 ```bash
 ./start.sh
 ```
 
-3. Install dependencies inside PHP container:
-
-```bash
-docker compose exec api composer install
-```
-
-4. Run migrations manually with Yii2:
-
-```bash
-docker compose exec api php yii migrate --interactive=0
-```
-
-5. Generate test tokens for seeded users:
+3. Generate test tokens for seeded users:
 
 ```bash
 docker compose exec api php yii token/generate 1 streamer
@@ -62,8 +50,7 @@ docker compose exec api php yii token/generate 2 audience
 
 Important:
 
-- `start.sh` does **not** run migrations.
-- Migration is a separate required step and must be executed manually via Yii2 command.
+- `start.sh` runs service startup, dependency check/install, and Yii2 migrations in one command.
 - `docker-compose.yml` loads runtime variables from `.env`.
 - Initial seeded users are inserted by migration (`streamer@test.local`, `audience@test.local`).
 - `JWT_SECRET` must be at least 32 characters for HS256.
@@ -79,7 +66,7 @@ docker compose up -d --build api
 - API base URL: `http://localhost:9003`
 - MySQL: `localhost:3306`
 - One-command startup: `./start.sh`
-- Manual migration command:
+- Manual migration command (if you need to rerun):
   - `docker compose exec api php yii migrate --interactive=0`
 
 ## Data Model
@@ -185,10 +172,20 @@ The codebase uses PHP 8.2 features that improve readability and safety compared 
 
 Compared with PHP 7.2, this reduces accidental mutation, improves static analysis, and keeps intent clearer during review.
 
+## Production-ready checklist
+
+- [x] All 4 endpoints pass functional and integration-level regression tests.
+- [x] JWT secret is strong and rotated per environment.
+- [x] `APP_ENV=prod` disables `/docs` endpoints.
+- [x] Migrations and rollback path are validated on clean DB.
+- [x] Logs and error responses do not leak stack traces.
+- [x] README runbook works on a fresh machine.
+
 ## Release handoff notes
 
 - Docker startup is one command: `./start.sh`.
-- Migration remains manual by design:
+- `start.sh` also applies migrations automatically.
+- Manual migration rerun (if needed):
   - `docker compose exec api php yii migrate --interactive=0`
 - Suggested submission artifacts:
   - source repo

@@ -19,7 +19,11 @@ class m260311_101500_add_active_streamer_unique_constraint extends Migration
         $this->addColumn(
             '{{%livestreams}}',
             'active_streamer_id',
-            "INT GENERATED ALWAYS AS (CASE WHEN `status` = 'active' THEN `streamer_id` ELSE NULL END) STORED"
+            $this->integer()->unsigned()->null()
+        );
+
+        $this->execute(
+            "UPDATE {{%livestreams}} SET active_streamer_id = CASE WHEN `status` = 'active' THEN `streamer_id` ELSE NULL END"
         );
 
         $this->createIndex(

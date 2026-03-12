@@ -59,6 +59,9 @@ class YiiLivestreamRepository implements LivestreamRepositoryInterface
         $record->streamer_id = $livestream->streamerId;
         $record->title = $livestream->title;
         $record->status = $livestream->status->value;
+        if ($record->hasAttribute('active_streamer_id')) {
+            $record->active_streamer_id = $livestream->isActive() ? $livestream->streamerId : null;
+        }
         $record->started_at = $livestream->startedAt->format('Y-m-d H:i:s');
         $record->closed_at = $livestream->closedAt?->format('Y-m-d H:i:s');
 
