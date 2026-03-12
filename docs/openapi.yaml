@@ -1,0 +1,281 @@
+openapi: 3.0.3
+info:
+  title: Yii2 Livestream API
+  version: 1.0.0
+  description: API contract for streamer and audience applications.
+servers:
+  - url: http://localhost:9003
+tags:
+  - name: Streamer
+  - name: Audience
+paths:
+  /streamer/start_room:
+    post:
+      tags: [Streamer]
+      summary: Start livestream room
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StartRoomRequest'
+            examples:
+              default:
+                value:
+                  title: Live coding session
+      responses:
+        '201':
+          description: Room started successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SingleLivestreamResponse'
+        '400':
+          description: Invalid request payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                badRequest:
+                  value:
+                    error: BAD_REQUEST
+                    message: Title is required and must be <= 255 characters
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          description: Streamer already has an active session
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                conflict:
+                  value:
+                    error: CONFLICT
+                    message: Streamer already has an active session
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /streamer/close_room:
+    post:
+      tags: [Streamer]
+      summary: Close active livestream room
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Room closed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SingleLivestreamResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          description: Active livestream not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                notFound:
+                  value:
+                    error: NOT_FOUND
+                    message: Active livestream not found
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /audience/livestreams:
+    get:
+      tags: [Audience]
+      summary: List active livestream rooms
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of active livestreams
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListLivestreamsResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /audience/livestreams/{livestream_id}:
+    get:
+      tags: [Audience]
+      summary: Get active livestream detail
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: livestream_id
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        '200':
+          description: Livestream detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SingleLivestreamResponse'
+        '400':
+          description: Invalid livestream id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                badRequest:
+                  value:
+                    error: BAD_REQUEST
+                    message: Livestream id must be greater than zero
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          description: Livestream not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                notFound:
+                  value:
+                    error: NOT_FOUND
+                    message: Livestream not found
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  responses:
+    Unauthorized:
+      description: Missing, invalid, or expired token
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            missing:
+              value:
+                error: UNAUTHORIZED
+                message: Missing bearer token
+            invalid:
+              value:
+                error: UNAUTHORIZED
+                message: Invalid or expired token
+    Forbidden:
+      description: Role mismatch
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            forbidden:
+              value:
+                error: FORBIDDEN
+                message: You are not allowed to access this resource
+    InternalError:
+      description: Unexpected server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            internal:
+              value:
+                error: INTERNAL_ERROR
+                message: Unexpected server error
+
+  schemas:
+    StartRoomRequest:
+      type: object
+      required: [title]
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 255
+
+    Livestream:
+      type: object
+      required: [id, streamer_id, title, status, started_at]
+      properties:
+        id:
+          type: integer
+          example: 101
+        streamer_id:
+          type: integer
+          example: 1
+        title:
+          type: string
+          example: Live coding session
+        status:
+          type: string
+          enum: [active, closed]
+          example: active
+        started_at:
+          type: string
+          format: date-time
+          example: 2026-03-11T10:00:00+00:00
+        closed_at:
+          type: string
+          format: date-time
+          nullable: true
+          example: null
+
+    SingleLivestreamResponse:
+      type: object
+      required: [data, message]
+      properties:
+        data:
+          $ref: '#/components/schemas/Livestream'
+        message:
+          type: string
+          example: OK
+
+    ListLivestreamsResponse:
+      type: object
+      required: [data, total, message]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Livestream'
+        total:
+          type: integer
+          example: 1
+        message:
+          type: string
+          example: OK
+
+    ErrorResponse:
+      type: object
+      required: [error, message]
+      properties:
+        error:
+          type: string
+          example: BAD_REQUEST
+        message:
+          type: string
+          example: Invalid request payload

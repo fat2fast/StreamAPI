@@ -28,10 +28,11 @@ docker compose exec api composer install
 docker compose exec api php yii migrate --interactive=0
 ```
 
-5. Generate test token (example for seeded streamer user):
+5. Generate test tokens for seeded users:
 
 ```bash
 docker compose exec api php yii token/generate 1 streamer
+docker compose exec api php yii token/generate 2 audience
 ```
 
 Important:
@@ -45,3 +46,32 @@ Important:
 
 - API base URL: `http://localhost:9003`
 - MySQL: `localhost:3306`
+
+## API documentation files
+
+- OpenAPI spec: `docs/openapi.yaml`
+- Postman collection: `docs/postman_collection.json`
+
+## Postman usage
+
+1. Import `docs/postman_collection.json`.
+2. Set collection variables:
+   - `base_url` -> `http://localhost:9003`
+   - `streamer_token` -> token from `token/generate 1 streamer`
+   - `audience_token` -> token from `token/generate 2 audience`
+3. Run `Streamer -> Start Room` first to auto-populate `livestream_id`.
+4. Then run audience endpoints.
+
+## Automated tests
+
+Run all tests:
+
+```bash
+docker compose run --rm -T api ./vendor/bin/phpunit -c phpunit.xml.dist
+```
+
+Run only functional API contract tests:
+
+```bash
+docker compose run --rm -T api ./vendor/bin/phpunit -c phpunit.xml.dist tests/Functional/ApiContractTest.php
+```
