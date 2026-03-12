@@ -6,18 +6,14 @@ use App\components\AuthContext;
 use App\components\JwtAuthFilter;
 use Application\Livestream\DTO\CloseRoomInput;
 use Application\Livestream\DTO\StartRoomInput;
-use Application\Livestream\Exception\ActiveLivestreamConflictException;
-use Application\Livestream\Exception\ActiveLivestreamNotFoundException;
-use Application\Livestream\Exception\InvalidLivestreamInputException;
 use Application\Livestream\UseCase\CloseRoomUseCase;
 use Application\Livestream\UseCase\StartRoomUseCase;
 use Throwable;
 use Yii;
-use yii\web\Controller;
 
-final class StreamerController extends Controller
+final class StreamerController extends ApiController
 {
-    public bool $enableCsrfValidation = false;
+    public $enableCsrfValidation = false;
 
     public function behaviors(): array
     {
@@ -47,17 +43,9 @@ final class StreamerController extends Controller
                 title: $title
             ));
 
-            Yii::$app->response->statusCode = 201;
-            return [
-                'data' => $output->toArray(),
-                'message' => 'OK',
-            ];
-        } catch (InvalidLivestreamInputException $exception) {
-            return $this->error(400, 'BAD_REQUEST', $exception->getMessage());
-        } catch (ActiveLivestreamConflictException $exception) {
-            return $this->error(409, 'CONFLICT', $exception->getMessage());
-        } catch (Throwable) {
-            return $this->error(500, 'INTERNAL_ERROR', 'Unexpected server error');
+            return $this->success($output->toArray(), 201);
+        } catch (Throwable $throwable) {
+            return $this->fromException($throwable);
         }
     }
 
@@ -73,27 +61,9 @@ final class StreamerController extends Controller
         try {
             $output = $useCase(new CloseRoomInput(streamerId: $streamerId));
 
-            Yii::$app->response->statusCode = 200;
-            return [
-                'data' => $output->toArray(),
-                'message' => 'OK',
-            ];
-        } catch (InvalidLivestreamInputException $exception) {
-            return $this->error(400, 'BAD_REQUEST', $exception->getMessage());
-        } catch (ActiveLivestreamNotFoundException $exception) {
-            return $this->error(404, 'NOT_FOUND', $exception->getMessage());
-        } catch (Throwable) {
-            return $this->error(500, 'INTERNAL_ERROR', 'Unexpected server error');
+            return $this->success($output->toArray());
+        } catch (Throwable $throwable) {
+            return $this->fromException($throwable);
         }
-    }
-
-    private function error(int $statusCode, string $error, string $message): array
-    {
-        Yii::$app->response->statusCode = $statusCode;
-
-        return [
-            'error' => $error,
-            'message' => $message,
-        ];
     }
 }

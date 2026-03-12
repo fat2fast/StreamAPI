@@ -49,6 +49,10 @@ final class AudienceControllerTest extends TestCase
     {
         Yii::$container->clear(ListLivestreamsUseCase::class);
         Yii::$container->clear(GetLivestreamUseCase::class);
+
+        restore_error_handler();
+        restore_exception_handler();
+
         Yii::$app = null;
 
         parent::tearDown();

@@ -28,11 +28,18 @@ docker compose exec api composer install
 docker compose exec api php yii migrate --interactive=0
 ```
 
+5. Generate test token (example for seeded streamer user):
+
+```bash
+docker compose exec api php yii token/generate 1 streamer
+```
+
 Important:
 
 - `start.sh` does **not** run migrations.
 - Migration is a separate required step and must be executed manually via Yii2 command.
 - `docker-compose.yml` loads runtime variables from `.env`.
+- Initial seeded users are inserted by migration (`streamer@test.local`, `audience@test.local`).
 
 ## Service endpoints
 

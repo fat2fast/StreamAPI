@@ -50,6 +50,10 @@ final class StreamerControllerTest extends TestCase
     {
         Yii::$container->clear(StartRoomUseCase::class);
         Yii::$container->clear(CloseRoomUseCase::class);
+
+        restore_error_handler();
+        restore_exception_handler();
+
         Yii::$app = null;
 
         parent::tearDown();
