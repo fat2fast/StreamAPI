@@ -172,6 +172,15 @@ The codebase uses PHP 8.2 features that improve readability and safety compared 
 
 Compared with PHP 7.2, this reduces accidental mutation, improves static analysis, and keeps intent clearer during review.
 
+## Future features
+
+- Use Redis to cache active livestream state and reduce read load on MySQL.
+- Use RabbitMQ for asynchronous, concurrent viewer-count aggregation and event processing.
+- Add real-time room metrics endpoints (viewers, peak viewers, average watch time).
+- Add idempotency keys for streamer write APIs to improve safety under retries.
+- Add per-user and per-IP rate limiting to protect public audience endpoints.
+- Add observability stack (structured logs, metrics, tracing) for faster incident diagnosis.
+
 ## Production-ready checklist
 
 - [x] All 4 endpoints pass functional and integration-level regression tests.
